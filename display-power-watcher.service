@@ -1,0 +1,13 @@
+[Unit]
+Description=Display Power Watcher Service
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Environment="PATH=/home/ammaar/bin:/usr/bin:/usr/sbin"
+ExecStart=/home/ammaar/bin/display-power-watcher
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=graphical-session.target
