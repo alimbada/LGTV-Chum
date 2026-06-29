@@ -1,0 +1,16 @@
+[Unit]
+Description=LG TV Power Control on Boot/Shutdown
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User=ammaar
+# Runs on boot once the network is online
+ExecStart=/home/ammaar/bin/lgtv-control.sh on
+# Runs on shutdown (ignores reboot)
+ExecStop=/bin/bash -c 'systemctl list-jobs | grep -q reboot.target || /home/ammaar/bin/lgtv-control.sh off'
+
+[Install]
+WantedBy=multi-user.target
