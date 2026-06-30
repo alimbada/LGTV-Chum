@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -14,17 +15,68 @@ import (
 
 // Configuration
 const ControlScript = "/home/ammaar/bin/lgtv-control.sh"
+const TargetHDMIAppId = "com.webos.app.hdmi4"
 const PollInterval = 1 * time.Second
 
-// Concurrency and State Variables
 var (
 	lastState      string
 	stateMutex     sync.Mutex
 	ignoreDRMUntil time.Time
 )
 
+// LGTVResponse maps the expected JSON structure from getForegroundAppInfo
+type LGTVResponse struct {
+	Payload struct {
+		AppId string `json:"appId"`
+	} `json:"payload"`
+}
+
+// isTargetPortActive queries the TV and checks if the current app matches TargetHDMIAppId
+func isTargetPortActive() bool {
+	cmd := exec.Command(ControlScript, "getForegroundAppInfo")
+	outBytes, err := cmd.Output()
+	if err != nil {
+		log.Printf("Warning: Failed to execute TV query: %v", err)
+		return false
+	}
+
+	outStr := string(outBytes)
+
+	// The script prepends standard text logs before the JSON.
+	// We find the first '{' to isolate the JSON payload.
+	startIndex := strings.Index(outStr, "{")
+	if startIndex == -1 {
+		log.Printf("Warning: No JSON payload found in TV response: %s", outStr)
+		return false
+	}
+
+	jsonStr := outStr[startIndex:]
+
+	var resp LGTVResponse
+	if err := json.Unmarshal([]byte(jsonStr), &resp); err != nil {
+		log.Printf("Warning: Failed to parse TV JSON response: %v", err)
+		return false
+	}
+
+	if resp.Payload.AppId != TargetHDMIAppId {
+		log.Printf("Port check failed: TV is currently on '%s', not '%s'.", resp.Payload.AppId, TargetHDMIAppId)
+		return false
+	}
+
+	return true
+}
+
 // triggerTV executes the external control script
 func triggerTV(state string) {
+	// Only check the HDMI port if we are trying to turn the TV OFF.
+	// If the TV is asleep, it cannot report its port, so we must allow ON commands through.
+	if state == "OFF" {
+		if !isTargetPortActive() {
+			fmt.Printf("[%s] TV is not on target port (or unreachable). Ignoring OFF command.\n", time.Now().Format("15:04:05"))
+			return
+		}
+	}
+
 	action := "off"
 	if state == "ON" {
 		action = "on"
@@ -42,7 +94,6 @@ func updateState(newState string, source string) {
 	defer stateMutex.Unlock()
 
 	// If DRM tries to turn the TV OFF immediately after a D-Bus wake, ignore it temporarily
-	// to allow the graphics card time to actually power up the ports.
 	if source == "DRM Poller" && newState == "OFF" && time.Now().Before(ignoreDRMUntil) {
 		return
 	}
@@ -103,7 +154,7 @@ func listenForWake() {
 	scanner := bufio.NewScanner(stdout)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
-		
+
 		// 'boolean false' indicates the system has just woken from sleep
 		if strings.Contains(line, "boolean false") {
 			updateState("ON", "D-Bus System Wake")
