@@ -17,6 +17,8 @@ I've enjoyed using the functionality provided by [LGTV Companion](https://github
 
 ### Installation
 
+> ℹ️ **Note:** There is an `install-script` branch which streamlines this process but it is currently untested.
+
 #### Pre-requisites
 
 0. Install [klattimer/LGWebOSRemote](https://github.com/klattimer/LGWebOSRemote) and create a Python virtual environment for it at `$HOME/lgtv-venv`
@@ -47,5 +49,5 @@ I've enjoyed using the functionality provided by [LGTV Companion](https://github
 
 ## To-do
 
-[ ] Streamline configuration and installation
-[ ] Figure out TV off behaviour at system sleep.
+- [ ] Streamline configuration and installation
+- [ ] Figure out TV off behaviour at system sleep.
