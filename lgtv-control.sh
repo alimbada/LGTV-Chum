@@ -42,8 +42,6 @@ exec_lgtv() {
     echo "$response"
 }
 
-#exec_lgtv $@
-
 if wait_for_network; then
     exec_lgtv $@
 else

@@ -1,11 +1,11 @@
 [Unit]
-Description=Display Power Watcher Service
+Description=LGTV Chum Service
 PartOf=graphical-session.target
 After=graphical-session.target
 
 [Service]
 Environment="PATH=/home/ammaar/bin:/usr/bin:/usr/sbin"
-ExecStart=/home/ammaar/bin/display-power-watcher
+ExecStart=/home/ammaar/bin/lgtv-chum
 Restart=always
 RestartSec=10
 
