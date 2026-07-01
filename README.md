@@ -46,5 +46,5 @@ To remove the installed binary, scripts, and disable/delete the systemd services
 
 ## To-do
 
-[x] Streamline configuration and installation
-[ ] Figure out TV off behaviour at system sleep.
+- [x] Streamline configuration and installation
+- [ ] Figure out TV off behaviour at system sleep.
