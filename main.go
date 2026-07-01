@@ -14,7 +14,7 @@ import (
 )
 
 // Configuration
-const ControlScript = "/home/ammaar/bin/lgtv-control.sh"
+const ControlScript = "{{BIN_DIR}}/lgtv-control.sh"
 const TargetHDMIAppId = "com.webos.app.hdmi4"
 const PollInterval = 1 * time.Second
 

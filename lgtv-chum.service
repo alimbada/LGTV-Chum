@@ -4,8 +4,8 @@ PartOf=graphical-session.target
 After=graphical-session.target
 
 [Service]
-Environment="PATH=/home/ammaar/bin:/usr/bin:/usr/sbin"
-ExecStart=/home/ammaar/bin/lgtv-chum
+Environment="PATH={{BIN_DIR}}:/usr/bin:/usr/sbin"
+ExecStart={{BIN_DIR}}/lgtv-chum
 Restart=always
 RestartSec=10
 
