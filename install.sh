@@ -37,11 +37,8 @@ trap 'rm -rf "$TEMP_DIR"' EXIT
 
 echo "Preparing files..."
 
-# Replace placeholders and build main.go
-sed "s|{{BIN_DIR}}|$INSTALL_DIR|g" main.go > "$TEMP_DIR/main.go"
-
 echo "Compiling Go binary..."
-go build -o "$TEMP_DIR/lgtv-chum" "$TEMP_DIR/main.go"
+(cd src && go build -o "$TEMP_DIR/lgtv-chum" .)
 
 # Copy binary and control script
 echo "Copying binary and control script to $INSTALL_DIR..."
