@@ -12,7 +12,10 @@ import (
 	"time"
 )
 
-const TargetHDMIAppId = "com.webos.app.hdmi4"
+const TargetHDMIInputNumber = "4" //TODO: config
+
+var TargetHDMIInput = "HDMI_" + TargetHDMIInputNumber
+var TargetHDMIAppId = "com.webos.app.hdmi" + TargetHDMIInputNumber
 
 type PowerState string
 
@@ -75,7 +78,7 @@ func execLGTV(args ...string) ([]byte, error) {
 	}
 	lgtvPath := filepath.Join(homeDir, "lgtv-venv", "bin", "lgtv")
 
-	cmdArgs := append([]string{"--name", "MyTV", "--ssl"}, args...)
+	cmdArgs := append([]string{"--name", "MyTV", "--ssl"}, args...) //TODO: config TV name
 	cmd := exec.Command(lgtvPath, cmdArgs...)
 
 	var outBuf bytes.Buffer
@@ -161,8 +164,8 @@ func IsTargetPortActive() bool {
 
 // TriggerTV executes the control script using a verification and retry loop
 func TriggerTV(desiredState PowerState) {
-	const maxRetries = 4
-	const retryDelay = 3 * time.Second
+	const maxRetries = 4               //TODO: config?
+	const retryDelay = 3 * time.Second //TODO: config?
 
 	for attempt := 1; attempt <= maxRetries; attempt++ {
 		currentPower := GetPowerState()
@@ -199,5 +202,13 @@ func TriggerTV(desiredState PowerState) {
 		log.Printf("TV power state verified as %s on final check.\n", desiredState)
 	} else {
 		log.Printf("Warning: Failed to reach %s state after %d attempts.\n", desiredState, maxRetries)
+	}
+}
+
+// SetInput switches the TV to the specified input (e.g. "HDMI_4")
+func SetInput() {
+	log.Printf("Switching TV input to %s...\n", TargetHDMIInput)
+	if _, err := execLGTV("setInput", TargetHDMIInput); err != nil {
+		log.Printf("Failed to switch TV input: %v\n", err)
 	}
 }

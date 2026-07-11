@@ -9,8 +9,7 @@ import (
 )
 
 // Configuration
-const TargetHDMIAppId = "com.webos.app.hdmi4"
-const PollInterval = 1 * time.Second
+const PollInterval = 1 * time.Second //TODO: config?
 
 var (
 	lastState      tv.PowerState
@@ -18,13 +17,21 @@ var (
 	ignoreDRMUntil time.Time
 )
 
+type TriggerSource string
+
+const (
+	UdevListener     TriggerSource = "UDEV_LISTENER"
+	DbusWakeListener TriggerSource = "DBUS_WAKE_LISTENER"
+	DrmPoller        TriggerSource = "DRM_POLLER"
+)
+
 // updateState safely handles state transitions triggered by either DRM or D-Bus
-func updateState(newState tv.PowerState, source string) {
+func updateState(newState tv.PowerState, source TriggerSource) {
 	stateMutex.Lock()
 	defer stateMutex.Unlock()
 
 	// If DRM tries to turn the TV OFF immediately after a D-Bus wake, ignore it temporarily
-	if source == "DRM Poller" && newState == tv.PowerOff && time.Now().Before(ignoreDRMUntil) {
+	if source == DrmPoller && newState == tv.PowerOff && time.Now().Before(ignoreDRMUntil) {
 		return
 	}
 
@@ -32,7 +39,7 @@ func updateState(newState tv.PowerState, source string) {
 
 	// If D-Bus wakes the system, we FORCE an update regardless of the previous state.
 	// This fixes desyncs if the TV was manually switched off while the PC was asleep.
-	if source == "D-Bus System Wake" && newState == tv.PowerOn {
+	if (source == DbusWakeListener || source == UdevListener) && newState == tv.PowerOn {
 		ignoreDRMUntil = time.Now().Add(3 * time.Second)
 		forceUpdate = true
 	}
@@ -59,6 +66,9 @@ func main() {
 	// Start the D-Bus wake listener in the background
 	go listenForWake()
 
+	// Start the udev device-connect listener in the background
+	go listenForDeviceConnect()
+
 	// Start the DRM polling loop in the foreground
 	ticker := time.NewTicker(PollInterval)
 	defer ticker.Stop()
@@ -68,6 +78,6 @@ func main() {
 		if err != nil {
 			continue
 		}
-		updateState(currentState, "DRM Poller")
+		updateState(currentState, DrmPoller)
 	}
 }

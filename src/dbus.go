@@ -26,8 +26,8 @@ func listenForWake() {
 		line := strings.TrimSpace(scanner.Text())
 
 		// 'boolean false' indicates the system has just woken from sleep
-		if strings.Contains(line, "boolean false") {
-			updateState(tv.PowerOn, "D-Bus System Wake")
+		if strings.Contains(line, "boolean false") && tv.GetPowerState() == tv.PowerOff {
+			updateState(tv.PowerOn, DbusWakeListener)
 		}
 	}
 
