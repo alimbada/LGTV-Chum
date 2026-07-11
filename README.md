@@ -17,8 +17,6 @@ I've enjoyed using the functionality provided by [LGTV Companion](https://github
 
 ### Installation
 
-> ℹ️ **Note:** There is an `install-script` branch which streamlines this process but it is currently untested.
-
 #### Pre-requisites
 
 Install [klattimer/LGWebOSRemote](https://github.com/klattimer/LGWebOSRemote) and create a Python virtual environment for it at `$HOME/lgtv-venv`.
