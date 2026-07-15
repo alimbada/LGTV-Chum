@@ -8,6 +8,12 @@ This repo consists of a pair of systemd services, a Go program and a wrapper scr
 
 I've enjoyed using the functionality provided by [LGTV Companion](https://github.com/JPersson77/LGTVCompanion) on Windows and [lgtv-control-macos](https://github.com/cmer/lg-tv-control-macos) on macOS. If anyone is looking for alternatives for those platforms, I highly recommend them. I'm not aware of any Linux alternatives as I started hacking my own solution together (and had some fun learning about some Linux internals on the way...) before I could get around to looking for one.
 
+## Features
+
+- **Automatic TV Power Management**: Automatically switches the LG TV on or off in sync with the computer's display power state, by polling the Linux DRM subsystem.
+- **System Wake Detection**: Listens to system power signals over D-Bus to wake the TV when the system resumes from sleep.
+- **KVM / USB Device Switch Trigger**: Optionally monitors USB connections via `udev` to automatically switch the TV to the correct HDMI input when a specific device (e.g., a KVM switch or USB hub) is connected.
+
 ## Usage
 
 ### Caveats
@@ -31,13 +37,38 @@ Run the provided installation script. You can optionally specify a custom instal
 
 This will automatically:
 
-- Replace placeholders in `main.go` and systemd services with the actual paths and user.
+- Replace placeholders in systemd services with the actual paths and user.
 - Build the `lgtv-chum` binary.
 - Copy the scripts and binary to your installation directory.
 - Configure and enable the system-level boot/shutdown service (requires `sudo` privileges).
 - Configure, start, and enable the user-level service.
 
-#### Uninstall
+### Configuration
+
+The daemon reads its configuration from a file named `lgtv-chum.conf` in the user's `~/.config` directory.
+
+Create the file at `~/.config/lgtv-chum.conf`:
+
+```ini
+# ~/.config/lgtv-chum.conf
+
+# Required: The HDMI input number on the LG TV to switch to (e.g. 4 for HDMI 4)
+hdmi_input = 4
+
+# Required: The name of the TV configured in klattimer/LGWebOSRemote (defaults to MyTV)
+tv_name = MyTV
+
+# Optional: Enable KVM USB connection monitoring (true or false, defaults to false)
+monitor_kvm_connection = false
+
+# Required if monitor_kvm_connection is true: The USB Vendor ID to monitor.
+# When connected, switches the TV input to the above HDMI port.
+kvm_vendor_id = 0000
+```
+
+If the configuration file is missing or any of the required fields are omitted, the program will log an error and exit at startup.
+
+### Uninstall
 
 To remove the installed binary, scripts, and disable/delete the systemd services:
 
