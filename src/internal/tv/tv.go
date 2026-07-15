@@ -12,10 +12,19 @@ import (
 	"time"
 )
 
-const TargetHDMIInputNumber = "4" //TODO: config
+var TargetHDMIInputNumber string
 
-var TargetHDMIInput = "HDMI_" + TargetHDMIInputNumber
-var TargetHDMIAppId = "com.webos.app.hdmi" + TargetHDMIInputNumber
+var TargetHDMIInput string
+var TargetHDMIAppId string
+var TVName string
+
+// Initialize configures the package-level configuration variables
+func Initialize(hdmiInputNumber string, tvName string) {
+	TargetHDMIInputNumber = hdmiInputNumber
+	TargetHDMIInput = "HDMI_" + TargetHDMIInputNumber
+	TargetHDMIAppId = "com.webos.app.hdmi" + TargetHDMIInputNumber
+	TVName = tvName
+}
 
 type PowerState string
 
@@ -78,7 +87,7 @@ func execLGTV(args ...string) ([]byte, error) {
 	}
 	lgtvPath := filepath.Join(homeDir, "lgtv-venv", "bin", "lgtv")
 
-	cmdArgs := append([]string{"--name", "MyTV", "--ssl"}, args...) //TODO: config TV name
+	cmdArgs := append([]string{"--name", TVName, "--ssl"}, args...)
 	cmd := exec.Command(lgtvPath, cmdArgs...)
 
 	var outBuf bytes.Buffer

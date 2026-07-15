@@ -55,6 +55,16 @@ func updateState(newState tv.PowerState, source TriggerSource) {
 func main() {
 	log.Println("Starting Hybrid LGTV Daemon (Robust Verification + D-Bus Wake Listener)...")
 
+	// Load configuration
+	cfg, err := loadConfig()
+	if err != nil {
+		log.Fatalf("Configuration error: %v", err)
+	}
+
+	// Initialize package variables from config
+	tv.Initialize(cfg.TargetHDMIInputNumber, cfg.TVName)
+	targetVendorID = cfg.TargetVendorID
+
 	// Initialize starting state
 	initialState, err := getDisplayState()
 	if err != nil {
@@ -66,8 +76,10 @@ func main() {
 	// Start the D-Bus wake listener in the background
 	go listenForWake()
 
-	// Start the udev device-connect listener in the background
-	go listenForDeviceConnect()
+	// Start the udev device-connect listener in the background if enabled
+	if cfg.MonitorKVMConnection {
+		go listenForDeviceConnect()
+	}
 
 	// Start the DRM polling loop in the foreground
 	ticker := time.NewTicker(PollInterval)

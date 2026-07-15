@@ -11,7 +11,7 @@ import (
 )
 
 // targetVendorID is the USB vendor ID whose connection triggers an HDMI input switch
-const targetVendorID = "045b" //TODO: config
+var targetVendorID string
 
 var lastProcessedTime time.Time // tracks last time a matching device was processed
 
@@ -94,7 +94,7 @@ func processUdevEvent(lines []string) {
 		updateState(tv.PowerOn, UdevListener)
 	}
 
-	log.Printf("Device with vendor ID %s connected. Switching TV to HDMI 4...\n", targetVendorID)
+	log.Printf("Device with vendor ID %s connected. Switching TV to %s...\n", targetVendorID, tv.TargetHDMIInput)
 	if !tv.IsTargetPortActive() {
 		tv.SetInput()
 	}
